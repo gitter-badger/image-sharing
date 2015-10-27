@@ -1,0 +1,16 @@
+extends layout
+
+block content
+
+  if(presentation != '')
+    !{presentation}
+
+  h1= title
+
+  ul
+    each channel, i in channels
+      li
+        if(channel.type == 2)
+          a(href="/show_list/#{channel.id}")= channel.name
+        else
+          a(href="/channel/#{channel.id}")= channel.name
