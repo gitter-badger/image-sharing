@@ -1,83 +1,53 @@
+"use strict";
 
-  "use strict";
+var gui = require('nw.gui');
+var CustomTrayMenu = require('./js/custom-tray-menu');
+var win = gui.Window.get();
+global.main_win = win;
 
-  //On commence par la mise en cluster
-  var cluster = require('cluster');
+// Extend application menu for Mac OS
+if (process.platform == "darwin") {
+  var menu = new gui.Menu({type: "menubar"});
+  menu.createMacBuiltin && menu.createMacBuiltin(window.document.title);
+  win.menu = menu;
+}
 
-  // Code to run if we're in the master process
-  if (cluster.isMaster) {
+var $ = function (selector) {
+  return document.querySelector(selector);
+}
 
-    var gui = require('nw.gui');
-    var CustomTrayMenu = require('./js/custom-tray-menu');
-    var win = gui.Window.get();
-    global.main_win = win;
+var customTray;
 
-    // Extend application menu for Mac OS
-    if (process.platform == "darwin") {
-      var menu = new gui.Menu({type: "menubar"});
-      menu.createMacBuiltin && menu.createMacBuiltin(window.document.title);
-      win.menu = menu;
-    }
+customTray = new CustomTrayMenu('views/custom-tray-menu.html', 'public/icon.png', {
+  width: 200,
+  height: 180
+});
 
-    var $ = function (selector) {
-      return document.querySelector(selector);
-    }
+ var app = require('./js/build_server');
+ var debug = require('debug')('plex_webdown:server');
+ var http = require('http');
 
-    var customTray;
+ /**
+  * Get port from environment and store in Express.
+  */
 
-    customTray = new CustomTrayMenu('views/custom-tray-menu.html', 'public/icon.png', {
-      width: 200,
-      height: 180
-    });
+ var port = normalizePort(process.env.PORT || '3001');
+ app.set('port', port);
 
+ /**
+  * Create HTTP server.
+  */
 
-    // Count the machine's CPUs
-    var cpuCount = require('os').cpus().length;
+ var server = http.createServer(app);
 
-    // Create a worker for each CPU
-    for (var i = 0; i < cpuCount; i += 1) {
-       //console.log('Création du fork ' + i);
-       cluster.fork();
-    }
-    console.log('Création de '+cpuCount+' thread');
+ /**
+  * Listen on provided port, on all network interfaces.
+  */
 
-    // Listen for dying workers
-    cluster.on('exit', function (worker) {
-        // Replace the dead worker, we're not sentimental
-        //cluster.fork();
-        console.log('Remplacement du worker ' + worker.id);
-    });
+ server.listen(port);
+ server.on('error', onError);
+ server.on('listening', onListening);
 
-  // Code to run if we're in a worker process
-  } else {
-    /**
-     * Module dependencies.
-     */
-   var app = require('./js/build_server');
-   var debug = require('debug')('plex_webdown:server');
-   var http = require('http');
-
-   /**
-    * Get port from environment and store in Express.
-    */
-
-   var port = normalizePort(process.env.PORT || '3001');
-   app.set('port', port);
-
-   /**
-    * Create HTTP server.
-    */
-
-   var server = http.createServer(app);
-
-   /**
-    * Listen on provided port, on all network interfaces.
-    */
-
-   server.listen(port);
-   server.on('error', onError);
-   server.on('listening', onListening);
-  }
 
 
   /**
