@@ -9,4 +9,5 @@ nvm use 4
 npm install --save socket.io
 npm install --save express
 
- 
+TODO:
+http://socket.io/get-started/chat/ 
