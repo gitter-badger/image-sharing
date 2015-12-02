@@ -1,0 +1,12 @@
+Installation
+
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash
+
+nvm install 4
+
+nvm use 4
+
+npm install --save socket.io
+npm install --save express
+
+ 
